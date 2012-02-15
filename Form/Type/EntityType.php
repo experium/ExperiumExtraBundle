@@ -21,7 +21,7 @@ class EntityType extends AbstractType
     public function buildForm(FormBuilder $builder, array $options)
     {
         if ($options['multiple']) {
-            //throw new \InvalidArgumentException('Multiple temporary not supported');
+            throw new \InvalidArgumentException('Multiple temporary not supported');
             $builder
                 ->addEventSubscriber(new MergeCollectionListener())
                 ->prependClientTransformer(new EntitiesToArrayTransformer($options['choice_list']))
@@ -45,7 +45,7 @@ class EntityType extends AbstractType
 
         if (!isset($options['choice_list'])) {
             $defaultOptions['choice_list'] = new EntityChoiceList(
-                $this->container->get($options['em'].'.entity_manager'),
+                $this->container->get(($options['em'] ?: $this->container->get('kernel')->getName()).'.entity_manager'),
                 $options['class'],
                 $options['entity_collection'],
                 $options['callable'],
