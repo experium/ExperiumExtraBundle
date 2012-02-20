@@ -16,7 +16,12 @@ class ReflectionHelper
 
     public static function updateProperty($object, $property, $value)
     {
-        $property = static::getProperty(new \ReflectionObject($object), $property);
+        $reflectionObject = new \ReflectionObject($object);
+        if ($object instanceof \Doctrine\ORM\Proxy\Proxy && $reflectionObject->hasMethod('__load')) {
+            $object->__load();
+        }
+
+        $property = static::getProperty($reflectionObject, $property);
 
         if (!$property) {
             throw new \InvalidArgumentException('Property not found.');
