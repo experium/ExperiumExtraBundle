@@ -6,13 +6,18 @@
 
     <parameters>
         <parameter key="experium.form.type.experium_entity.class">Experium\ExtraBundle\Form\Type\EntityType</parameter>
+        <parameter key="streamed_response_listener.class">Experium\ExtraBundle\EventListener\StreamedResponseListener</parameter>
     </parameters>
 
     <services>
-      <service id="form.type.experium_entity" class="%experium.form.type.experium_entity.class%">
-          <argument type="service" id="service_container" />
-          <tag name="form.type" alias="experium_entity" />
-      </service>
+        <service id="form.type.experium_entity" class="%experium.form.type.experium_entity.class%">
+            <argument type="service" id="service_container" />
+            <tag name="form.type" alias="experium_entity" />
+        </service>
+
+        <service id="streamed_response_listener" class="%streamed_response_listener.class%">
+            <tag name="kernel.event_subscriber" />
+        </service>
     </services>
 
 </container>
