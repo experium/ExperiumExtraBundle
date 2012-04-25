@@ -33,6 +33,11 @@ class CsvGenerator
 
     public function generateRow($rowData)
     {
+        // TODO переделать чтобы ок было.
+        $rowData = str_replace('"', '`', $rowData);
+        $rowData = str_replace("\r\n", " ", $rowData);
+        $rowData = str_replace("\r", " ", $rowData);
+        $rowData = str_replace("\n", " ", $rowData);
         // TODO Обязательно именно "\r\n"?
         $row = $this->escaper.implode($this->escaper.$this->delimiter.$this->escaper, $rowData).$this->escaper."\r\n";
 
