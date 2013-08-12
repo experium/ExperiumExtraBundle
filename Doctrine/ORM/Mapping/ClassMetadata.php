@@ -1,15 +1,30 @@
 <?php
-
 namespace Experium\ExtraBundle\Doctrine\ORM\Mapping;
 
-class ClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
+use Doctrine\Common\Util\Inflector;
+use Doctrine\ORM\Mapping\ClassMetadata as BaseClassMetadata;
+
+class ClassMetadata extends BaseClassMetadata
 {
     public function __construct($entityName)
     {
         parent::__construct($entityName);
 
         // For 2.1.x.
-        $this->setTableName(\Doctrine\Common\Util\Inflector::tableize($this->getTableName()));
+        $this->setTableName(Inflector::tableize($this->getTableName()));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function initializeReflection($reflService)
+    {
+        parent::initializeReflection($reflService);
+
+        // For 2.2.x.
+        $this->setPrimaryTable([
+            'name' => Inflector::tableize($this->getTableName())
+        ]);
     }
 
     private function normalizeMapping(array $mapping)
@@ -17,14 +32,14 @@ class ClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         if (isset($mapping['joinColumns'])) {
             foreach ($mapping['joinColumns'] as &$joinColumn) {
                 if (is_null($joinColumn['name'])) {
-                    $joinColumn['name'] = \Doctrine\Common\Util\Inflector::tableize(
+                    $joinColumn['name'] = Inflector::tableize(
                         $mapping['fieldName'].'_'.$joinColumn['referencedColumnName']
                     );
                 }
             }
         } else {
             if (!isset($mapping['columnName'])) {
-                $mapping['columnName'] = \Doctrine\Common\Util\Inflector::tableize($mapping['fieldName']);
+                $mapping['columnName'] = Inflector::tableize($mapping['fieldName']);
             }
         }
 
