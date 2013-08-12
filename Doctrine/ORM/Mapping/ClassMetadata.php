@@ -12,6 +12,20 @@ class ClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         $this->setTableName(\Doctrine\Common\Util\Inflector::tableize($this->getTableName()));
     }
 
+    /**
+     * {@inheritdoc}
+     * @param string $entityName The name of the entity class the new instance is used for.
+     */
+    public function initializeReflection($reflService)
+    {
+        parent::initializeReflection($reflService);
+
+        // For 2.2.x.
+        $this->setPrimaryTable([
+            'name' => \Doctrine\Common\Util\Inflector::tableize($this->getTableName())
+        ]);
+    }
+
     private function normalizeMapping(array $mapping)
     {
         if (isset($mapping['joinColumns'])) {
