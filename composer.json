@@ -1,0 +1,9 @@
+{
+    "name": "experium/extra-bundle",
+    "autoload": {
+        "psr-0": {
+            "Experium\\ExtraBundle": ""
+        }
+    },
+    "target-dir": "Experium/ExtraBundle"
+}
