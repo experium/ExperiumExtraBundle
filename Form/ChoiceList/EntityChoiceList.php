@@ -81,12 +81,12 @@ class EntityChoiceList extends ArrayChoiceList
         parent::load();
 
         if ($this->entityCollection) {
-            $entities = $this->entityCollection->fetchAll();
+            $entities = $this->entityCollection;
         } else {
             $entities = $this->choices;
         }
 
-        $this->choices = array();
+        $this->choices  = array();
         $this->entities = array();
 
         $this->loadEntities($entities);
@@ -124,10 +124,9 @@ class EntityChoiceList extends ArrayChoiceList
     private function loadEntity($entity, $group = null)
     {
         if ($this->callable) {
-            $callable = $this->callable;
-            $value = $callable($entity);
+            $value = call_user_func($this->callable, $entity);
         } else {
-            // Otherwise expect a __toString() method in the entity
+            // Otherwise expect a __toString() method in the entity.
             if (!method_exists($entity, '__toString')) {
                 throw new FormException('Entities passed to the choice field must have a "__toString()" method defined (or you can also override the "callable" option).');
             }
@@ -138,10 +137,10 @@ class EntityChoiceList extends ArrayChoiceList
         $id = $entity->getId();
 
         if (null === $group) {
-            // Flat list of choices
+            // Flat list of choices.
             $this->choices[$id] = $value;
         } else {
-            // Nested choices
+            // Nested choices.
             $this->choices[$group][$id] = $value;
         }
 
