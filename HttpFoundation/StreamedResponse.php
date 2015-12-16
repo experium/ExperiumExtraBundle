@@ -69,11 +69,11 @@ class StreamedResponse extends Response
     /**
      * @{inheritdoc}
      */
-    public function prepare()
+    public function prepare(Request $request)
     {
         $this->headers->set('Cache-Control', 'no-cache');
 
-        parent::prepare();
+        parent::prepare($request);
     }
 
     /**

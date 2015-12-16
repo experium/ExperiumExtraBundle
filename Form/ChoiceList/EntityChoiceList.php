@@ -2,17 +2,15 @@
 
 namespace Experium\ExtraBundle\Form\ChoiceList;
 
-use Symfony\Component\Form\Util\PropertyPath;
-use Symfony\Component\Form\Exception\FormException;
+use Symfony\Component\Form\ChoiceList\ArrayChoiceList;
+use Symfony\Component\Form\Exception\StringCastException;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
-use Symfony\Component\Form\Extension\Core\ChoiceList\ArrayChoiceList;
-use Doctrine\ORM\EntityManager;
 use Experium\ExtraBundle\Collection\EntityCollection;
 
 class EntityChoiceList extends ArrayChoiceList
 {
     /**
-     * @var Doctrine\ORM\EntityManager
+     * @var \Doctrine\ORM\EntityManager
      */
     private $em;
 
@@ -25,18 +23,20 @@ class EntityChoiceList extends ArrayChoiceList
      * This property is initialized by initializeChoices(). It should only
      * be accessed through getEntity() and getEntities().
      *
-     * @var Collection
+     * @var array
      */
     private $entities = array();
 
     /**
-     * @var Experium\ExtraBundle\Collection\EntityCollection
+     * @var \Experium\ExtraBundle\Collection\EntityCollection
      */
     private $entityCollection;
 
     private $callable;
 
     private $repository;
+
+    protected $choices;
 
     public function __construct($em, $class, $entityCollection = null, $callable = null, $choices = array())
     {
@@ -56,44 +56,25 @@ class EntityChoiceList extends ArrayChoiceList
         $this->em = $em;
         $this->entityCollection = $entityCollection;
 
+        if ($entityCollection) {
+            $entities = $this->entityCollection->fetchAll();
+        } else {
+            $entities = $choices;
+        }
+
+        $this->choices = array();
+        $this->entities = array();
+
         // The property option defines, which property (path) is used for
         // displaying entities as strings
         if ($callable) {
             $this->callable = $callable;
         }
 
-        parent::__construct($choices);
-    }
-
-    /**
-     * Initializes the choices and returns them
-     *
-     * If the entities were passed in the "choices" option, this method
-     * does not have any significant overhead. Otherwise, if a query builder
-     * was passed in the "query_builder" option, this builder is now used
-     * to construct a query which is executed. In the last case, all entities
-     * for the underlying class are fetched from the repository.
-     *
-     * @return array  An array of choices
-     */
-    protected function load()
-    {
-        parent::load();
-
-        if ($this->entityCollection) {
-            $entities = $this->entityCollection->fetchAll();
-        } else {
-            $entities = $this->choices;
-        }
-
-        $this->choices = array();
-        $this->entities = array();
-
         $this->loadEntities($entities);
-
         $this->loaded = true;
 
-        return $this->choices;
+        parent::__construct($this->choices);
     }
 
     /**
@@ -129,7 +110,7 @@ class EntityChoiceList extends ArrayChoiceList
         } else {
             // Otherwise expect a __toString() method in the entity
             if (!method_exists($entity, '__toString')) {
-                throw new FormException('Entities passed to the choice field must have a "__toString()" method defined (or you can also override the "callable" option).');
+                throw new StringCastException('Entities passed to the choice field must have a "__toString()" method defined (or you can also override the "callable" option).');
             }
 
             $value = (string) $entity;
@@ -148,24 +129,6 @@ class EntityChoiceList extends ArrayChoiceList
         $this->entities[$id] = $entity;
 
         $this->choices[$entity->getId()] = $entity;
-    }
-
-    /**
-     * Returns the according entities for the choices
-     *
-     * If the choices were not initialized, they are initialized now. This
-     * is an expensive operation, except if the entities were passed in the
-     * "choices" option.
-     *
-     * @return array  An array of entities
-     */
-    public function getEntities()
-    {
-        if (!$this->loaded) {
-            $this->load();
-        }
-
-        return $this->entities;
     }
 
     /**
